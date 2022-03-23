@@ -24,13 +24,22 @@ func crud() http.HandlerFunc {
 			json.NewEncoder(w).Encode(data)   //encode with w. from data (struct) to json
 		} else if r.Method == http.MethodGet { //if http method = get
 			//localhost:3000/?name=CodeChef-Vit . Method = GET . Params from URL
-			name := r.URL.Query().Get("name")   // assign name from url params "name" to variable name
-			data, err := model.ReadByName(name) //refering to model>create.go
-			if err != nil {
-				w.Write([]byte(err.Error())) //if error found, write error
+			name := r.URL.Query().Get("name") // assign name from url params "name" to variable name
+			if name != "" {                   //has parameters
+				data, err := model.ReadByName(name) //refering to model>create.go
+				if err != nil {
+					w.Write([]byte(err.Error())) //if error found, write error
+				}
+				w.WriteHeader(http.StatusOK)    //write http status ok as header
+				json.NewEncoder(w).Encode(data) //encode with w. from data (struct) to json
+			} else { //no parameters
+				data, err := model.ReadAll()
+				if err != nil {
+					w.Write([]byte(err.Error())) //if error found, write error
+				}
+				w.WriteHeader(http.StatusOK)    //write http status ok as header
+				json.NewEncoder(w).Encode(data) //encode with w. from data (struct) to json
 			}
-			w.WriteHeader(http.StatusOK)    //write http status ok as header
-			json.NewEncoder(w).Encode(data) //encode with w. from data (struct) to json
 		} else if r.Method == http.MethodDelete { //if http method = delete
 			//localhost:3000/CodeChef-Vit . Method = DELETE . Params from URL
 			name := r.URL.Path[1:]                         //take url params starting from / to end in this case : CodeChef-Vit
